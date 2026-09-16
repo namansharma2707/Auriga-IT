@@ -1,61 +1,194 @@
 # Helpdesk Ticket Queue
 
-## 1. Project Overview
-Project kya karta hai.
+A generic helpdesk ticket management system that automatically keeps the most pressing ticket at the top of the queue.
 
-## 2. Problem Statement
-Priya ki helpdesk problem kya thi.
+The system manages ticket priority, SLA response deadlines, overdue tickets, automatic escalation, assignment, filtering, customer search, and pagination.
 
-## 3. Key Features
-- Ticket management
-- Priority
-- SLA / response deadline
-- Overdue detection
-- Automatic escalation
-- Queue ordering
-- Assignment
-- Filters
-- Customer search
-- Pagination
+## Features
 
-## 4. Queue Ordering
-Queue kis rule se tickets ko arrange karti hai.
+* Create and manage helpdesk tickets
+* Three priority levels:
 
-## 5. Automatic Escalation
+  * Normal
+  * High
+  * Urgent
+* SLA-based response deadlines
+* Automatic overdue detection
+* Automatic priority escalation:
+
+  * Normal → High
+  * High → Urgent
+  * Urgent → Urgent
+* Maximum one priority-level escalation per automated run
+* Queue ordering based on urgency
+* Filter overdue tickets
+* Filter tickets assigned to the current agent
+* Assign and reassign tickets
+* Search tickets by customer name
+* Pagination for large ticket queues
+
+## Queue Ordering
+
+The queue is designed to always surface the most pressing tickets first.
+
+The ordering follows:
+
+```text
+Overdue Status
+      ↓
+Priority
+      ↓
+Response Deadline
+      ↓
+Stable Tie-Breaker
+```
+
+Overdue tickets are placed ahead of tickets that are still within their agreed response time.
+
+## Automatic Escalation
+
+A scheduled process checks for tickets that have breached their response deadline.
+
+When a ticket is overdue, its priority is increased by **one level per run**:
+
+```text
 Normal → High → Urgent
-One level per run.
+```
 
-## 6. Ticket Data Model
-Ticket mein kaun-kaun se fields hain.
+A single run must never escalate a ticket by more than one level.
 
-## 7. System Architecture
-Frontend → API → Service → Database etc.
+Example:
 
-## 8. Project Structure
-files/folders ka explanation.
+```text
+Run 1: Normal → High
+Run 2: High → Urgent
+```
 
-## 9. Setup & Installation
-Project run kaise karein.
+An already Urgent ticket remains Urgent.
 
-## 10. Configuration
-SLA / database / scheduler configuration.
+Resolved or closed tickets are not escalated.
 
-## 11. API Documentation
-GET /tickets
-POST /tickets
-...
- 
-## 12. Usage Examples
-Ticket create karna, filter karna etc.
+## Ticket Information
 
-## 13. Pagination
-Pagination kaise work karti hai.
+A ticket contains information such as:
 
-## 14. Assignment
-Agent ko ticket assign kaise hota hai.
+```text
+ID
+Customer
+Title
+Description
+Priority
+Status
+Created At
+Response Deadline
+Assigned To
+```
 
-## 15. Testing
-Tests kaise run karein.
+## Filtering & Search
 
-## 16. Future Improvements
-Possible future features.
+The system supports:
+
+* All tickets
+* Overdue tickets
+* Tickets assigned to the current agent
+* Customer-name search
+
+Filtering and searching preserve the queue's ordering rules.
+
+## Pagination
+
+Large ticket queues are paginated to avoid displaying all tickets at once.
+
+The general processing order is:
+
+```text
+Tickets
+   ↓
+Ordering
+   ↓
+Filtering / Search
+   ↓
+Pagination
+   ↓
+Results
+```
+
+## Generic Helpdesk
+
+The system is not tied to a specific person or organization.
+
+It is designed to support:
+
+* Multiple agents
+* Multiple customers
+* Multiple tickets
+* Configurable SLA rules
+* Configurable priorities
+* Different helpdesk environments
+
+## Project Structure
+
+```text
+helpdesk-ticket-queue/
+│
+├── README.md
+├── REASONING.md
+├── requirements.txt
+├── app/
+│   ├── models/
+│   ├── services/
+│   ├── routes/
+│   └── main.py
+│
+└── tests/
+```
+
+The exact structure may vary depending on the implementation.
+
+## Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd helpdesk-ticket-queue
+```
+
+### 2. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configure the application
+
+Set the required database, SLA, and application configuration.
+
+### 4. Run the application
+
+```bash
+python app/main.py
+```
+
+## Testing
+
+Run the test suite using the project's configured test command.
+
+The tests should cover:
+
+* Queue ordering
+* Overdue detection
+* Priority escalation
+* One-level-per-run escalation
+* Assignment
+* Filtering
+* Search
+* Pagination
+
+## Core Requirement
+
+The primary goal of the system is:
+
+> **Keep the most pressing helpdesk ticket at the top of the queue while automatically escalating tickets that breach their agreed response time.**
+
+For the detailed design decisions and reasoning behind the queue and escalation logic, see [`REASONING.md`](REASONING.md).
